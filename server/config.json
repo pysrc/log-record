@@ -1,4 +1,4 @@
 {
-    "host": "0.0.0.0:9567",
+    "host": "0.0.0.0:9587",
     "db": "root:root@tcp(127.0.0.1:3306)/test?charset=utf8"
 }

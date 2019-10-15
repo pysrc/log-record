@@ -15,17 +15,18 @@ type Config struct {
 	Db   *string `json:"db"`   // 数据库地址
 }
 
-// 日志
-type Log struct {
-	Svc  string `json:"svc"`  // 日志系统
-	Info string `json:"info"` // 日志详情
-}
-
 //错误处理
 func Error(err error) {
 	if err != nil {
 		log.Panic(err)
 		panic(err)
+	}
+}
+
+// 异常处理
+func Except(err error) {
+	if err != nil {
+		log.Println(err)
 	}
 }
 
@@ -57,8 +58,10 @@ func InitTable(db *sql.DB) {
 
 // 插入日志
 func Insert(db *sql.DB, svc string, info string) {
-	stmt, _ := db.Prepare(`insert into log_record(log_system, log_info) values (?,?)`)
-	stmt.Exec(svc, info)
+	stmt, ex := db.Prepare(`insert into log_record(log_system, log_info) values (?,?)`)
+	Except(ex)
+	_, ex2 := stmt.Exec(svc, info)
+	Except(ex2)
 	defer stmt.Close()
 }
 
@@ -74,5 +77,6 @@ func main() {
 		log.Println(svc, info)
 		go Insert(db, svc, info)
 	})
-	http.ListenAndServe("0.0.0.0:9587", nil)
+	err = http.ListenAndServe(*conf.Host, nil)
+	Error(err)
 }
