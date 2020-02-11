@@ -2,11 +2,11 @@ package main
 
 import (
 	"bufio"
-	"encoding/base64"
 	"flag"
 	"fmt"
 	"net/http"
 	"os"
+	"strings"
 )
 
 func main() {
@@ -16,12 +16,11 @@ func main() {
 	scanner := bufio.NewScanner(os.Stdin)
 	for scanner.Scan() {
 		bts := scanner.Bytes()
-		fmt.Println(string(bts))
-		http.Get(fmt.Sprintf(
-			"%s?svc=%s&info=%s",
-			*host,
-			*svc,
-			base64.StdEncoding.EncodeToString(bts),
-		))
+		var lg = string(bts) + "\n"
+		fmt.Print(lg)
+		http.Post(*host,
+			"application/x-www-form-urlencoded",
+			strings.NewReader(fmt.Sprintf(`svc=%s&info=%s`, *svc, lg)),
+		)
 	}
 }
