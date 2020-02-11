@@ -28,7 +28,13 @@ func Handle() {
 		fmt.Print(ilog.Svc, " ", ilog.Info)
 		svc := svcm[ilog.Svc]
 		if svc != nil {
-			svc.Writer.WriteString(ilog.Info)
+			_, err := svc.Writer.WriteString(ilog.Info)
+			if err != nil {
+				fmt.Println("system ", err.Error())
+				delete(svcm, ilog.Svc)
+				AddSvc(ilog.Svc)
+				return
+			}
 			svc.Writer.Flush()
 		}
 	}
