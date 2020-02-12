@@ -10,6 +10,7 @@ import (
 
 type LogInfo struct {
 	Svc  string
+	Sid  string
 	Info string
 }
 
@@ -25,10 +26,10 @@ var svcm map[string]*LogWriter
 func Handle() {
 	for {
 		ilog := <-logs
-		fmt.Print(ilog.Svc, " ", ilog.Info)
+		fmt.Printf("%s %s %s", ilog.Svc, ilog.Sid, ilog.Info)
 		svc := svcm[ilog.Svc]
 		if svc != nil {
-			_, err := svc.Writer.WriteString(ilog.Info)
+			_, err := svc.Writer.WriteString(fmt.Sprintf("%s %s", ilog.Sid, ilog.Info))
 			if err != nil {
 				fmt.Println("system ", err.Error())
 				delete(svcm, ilog.Svc)
@@ -79,7 +80,8 @@ func main() {
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		svc := r.FormValue("svc")
 		info := r.FormValue("info")
-		logs <- &LogInfo{svc, info}
+		sid := r.FormValue("sid")
+		logs <- &LogInfo{svc, sid, info}
 	})
 	var err = http.ListenAndServe(*host, nil)
 	if err != nil {
